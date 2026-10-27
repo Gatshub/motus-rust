@@ -501,9 +501,9 @@ fn ui(f: &mut Frame, app: &App) {
         Line::from(Span::styled(app.message.clone(), msg_s)).alignment(Alignment::Center),
         Line::from(Span::styled(
             if app.over {
-                "[n] rejouer · [m] menu · [q] quitter".to_string()
+                "[n] rejouer · esc menu · q quitter".to_string()
             } else {
-                "←→ bouger · backspace · entrée · esc menu · q quitter".to_string()
+                "←→ bouger · backspace · entrée · esc menu".to_string()
             },
             help_s,
         ))
@@ -561,9 +561,8 @@ fn run_app(
                     return Ok(());
                 }
                 match k.code {
-                    KeyCode::Char('q') if app.over => return Ok(()),
-                    KeyCode::Esc if !app.menu => app.menu = true,
                     KeyCode::Char('q') if app.menu => return Ok(()),
+                    KeyCode::Esc if !app.menu => app.menu = true,
                     _ => {}
                 }
                 if app.menu {
@@ -582,6 +581,7 @@ fn run_app(
                     }
                 } else {
                     match k.code {
+                        KeyCode::Char('q') if app.over => return Ok(()),
                         KeyCode::Char('n') if app.over => app.start(app.level),
                         KeyCode::Char('n') => app.type_rune('n'),
                         KeyCode::Left => app.cursor = app.prev_free_before(app.cursor),

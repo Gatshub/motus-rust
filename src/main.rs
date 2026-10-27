@@ -350,28 +350,26 @@ fn ui(f: &mut Frame, app: &App) {
     let help_s = Style::default().fg(Color::DarkGray);
 
     if app.menu {
-        let mut lines = vec![Line::from(Span::styled("♡  M O T U S  ♡", title_s)), Line::from("")];
-        for (i, (n, hints)) in LEVELS.iter().enumerate() {
-            let marker = if i == app.level { "→ " } else { "  " };
-            let indic = if *hints > 0 {
-                format!("{} indice(s)", hints)
-            } else {
-                "·".to_string()
-            };
+        let mut lines = vec![
+            Line::from(Span::styled(" ♡  M O T U S  ♡ ", title_s)),
+            Line::from(""),
+            Line::from(Span::styled("Choisis ta longueur :", msg_s)),
+            Line::from(""),
+        ];
+        for (i, (n, _hints)) in LEVELS.iter().enumerate() {
             let style = if i == app.level {
                 Style::default().fg(accent).add_modifier(Modifier::BOLD)
             } else {
                 msg_s
             };
             lines.push(Line::from(Span::styled(
-                format!("{}. {} lettres · {}", i + 1, n, indic),
+                format!("  [{}] {} lettres · {} essais", i + 1, n, MAX_TRIES),
                 style,
             )));
-            let _ = marker;
         }
         lines.push(Line::from(""));
         lines.push(Line::from(Span::styled(
-            "↑↓/jk choisir · chiffre ou entrée jouer · q quitter",
+            "↑↓ choisir · entrée jouer · 1-5 direct · q quitter",
             help_s,
         )));
         let p = Paragraph::new(lines).alignment(Alignment::Center);

@@ -10,7 +10,6 @@ use ratatui::{
 use rand::seq::SliceRandom;
 use std::{
     collections::HashMap,
-    fs,
     io::stdout,
     process::Command,
     time::{Duration, Instant},
@@ -55,13 +54,14 @@ impl App {
     fn new() -> Self {
         let mut dict: HashMap<usize, Vec<String>> = HashMap::new();
         let mut secrets: HashMap<usize, Vec<String>> = HashMap::new();
-        for (path, m) in [("data/mots.txt", &mut dict), ("data/secrets.txt", &mut secrets)] {
-            if let Ok(s) = fs::read_to_string(path) {
-                for w in s.lines() {
-                    let w = w.trim();
-                    if (5..=9).contains(&w.len()) {
-                        m.entry(w.len()).or_default().push(w.to_string());
-                    }
+        // embarqué dans le binaire (include_str! à la compilation)
+        let mots_embed = include_str!("../data/mots.txt");
+        let secrets_embed = include_str!("../data/secrets.txt");
+        for (s, m) in [(mots_embed, &mut dict), (secrets_embed, &mut secrets)] {
+            for w in s.lines() {
+                let w = w.trim();
+                if (5..=9).contains(&w.len()) {
+                    m.entry(w.len()).or_default().push(w.to_string());
                 }
             }
         }
@@ -90,10 +90,14 @@ impl App {
         self.len = LEVELS[level].0;
         let pool = self.secrets.get(&self.len).cloned().unwrap_or_default();
         let mut rng = rand::thread_rng();
-        self.secret = pool
-            .choose(&mut rng)
-            .map(|w| w.chars().collect())
-            .unwrap_or_else(|| vec!['a'; self.len]);
+        match pool.choose(&mut rng) {
+            Some(w) => self.secret = w.chars().collect(),
+            None => {
+                self.message = "Dictionnaire introuvable (＞﹏＜".into();
+                self.menu = true;
+                return;
+            }
+        }
         self.grid.clear();
         self.states.clear();
         self.current = vec!['\0'; self.len];
